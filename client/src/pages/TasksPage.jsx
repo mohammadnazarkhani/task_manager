@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash, FaSave } from "react-icons/fa";
 import {
   fetchTasks,
   createTask,
@@ -71,6 +71,12 @@ const TasksPage = () => {
     }
   };
 
+  const handleKeyPress = (e, action) => {
+    if (e.key === "Enter") {
+      action();
+    }
+  };
+
   return (
     <div className="bg-purple-100 min-h-screen flex flex-col items-center justify-center py-8">
       <h1 className="text-3xl font-bold text-purple-600 mb-8">Task Manager</h1>
@@ -83,6 +89,7 @@ const TasksPage = () => {
             placeholder="Add a new task"
             value={newTask}
             onChange={(e) => setNewTask(e.target.value)}
+            onKeyPress={(e) => handleKeyPress(e, handleAddTask)}
           />
         </div>
         <button
@@ -99,38 +106,46 @@ const TasksPage = () => {
               className="flex justify-between items-center p-2 border-b border-purple-200"
             >
               {editingTask && editingTask.id === task.id ? (
-                <input
-                  type="text"
-                  className="w-full p-2 border border-purple-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  value={editingTitle}
-                  onChange={(e) => setEditingTitle(e.target.value)}
-                />
-              ) : (
-                <span className="text-lg">{task.title}</span>
-              )}
-              <div>
-                {editingTask && editingTask.id === task.id ? (
+                <div className="flex items-center w-full">
+                  <input
+                    type="text"
+                    className="flex-grow p-2 border border-purple-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 mr-2"
+                    value={editingTitle}
+                    onChange={(e) => setEditingTitle(e.target.value)}
+                    onKeyPress={(e) => handleKeyPress(e, handleUpdateTask)}
+                  />
                   <button
                     className="text-green-600 hover:text-green-800 mr-2"
                     onClick={handleUpdateTask}
                   >
-                    Save
+                    <FaSave />
                   </button>
-                ) : (
                   <button
-                    className="text-purple-600 hover:text-purple-800 mr-2"
-                    onClick={() => handleEditTask(task)}
+                    className="text-red-600 hover:text-red-800"
+                    onClick={() => handleDelete(task.id)}
                   >
-                    <FaEdit />
+                    <FaTrash />
                   </button>
-                )}
-                <button
-                  className="text-red-600 hover:text-red-800"
-                  onClick={() => handleDelete(task.id)}
-                >
-                  <FaTrash />
-                </button>
-              </div>
+                </div>
+              ) : (
+                <>
+                  <span className="text-lg">{task.title}</span>
+                  <div>
+                    <button
+                      className="text-purple-600 hover:text-purple-800 mr-2"
+                      onClick={() => handleEditTask(task)}
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      className="text-red-600 hover:text-red-800"
+                      onClick={() => handleDelete(task.id)}
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                </>
+              )}
             </li>
           ))}
         </ul>
