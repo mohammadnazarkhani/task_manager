@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { FaEdit, FaTrash } from "react-icons/fa"; // Using React Icons
-import { fetchTasks, deleteTask } from "../services/api"; // Assuming API methods are in this folder
+import { FaEdit, FaTrash } from "react-icons/fa";
+import {
+  fetchTasks,
+  createTask,
+  deleteTask,
+  updateTask,
+} from "../services/api";
 
 const TasksPage = () => {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
+  const [editingTask, setEditingTask] = useState(null);
+  const [editingTitle, setEditingTitle] = useState("");
 
-  // Fetch tasks when the component mounts
   useEffect(() => {
     const getTasks = async () => {
       try {
@@ -20,7 +26,6 @@ const TasksPage = () => {
     getTasks();
   }, []);
 
-  // Handle task deletion
   const handleDelete = async (id) => {
     try {
       await deleteTask(id);
@@ -30,14 +35,39 @@ const TasksPage = () => {
     }
   };
 
-  // Handle adding a new task
-  const handleAddTask = () => {
+  const handleAddTask = async () => {
     if (newTask.trim()) {
-      // Call your API to add the task here, then update the state
-      // This example assumes a task has an 'id' and 'title'
-      const addedTask = { id: Date.now(), title: newTask }; // Mock new task
-      setTasks([...tasks, addedTask]);
-      setNewTask("");
+      try {
+        const response = await createTask({ title: newTask });
+        setTasks([...tasks, response.data]);
+        setNewTask("");
+      } catch (error) {
+        console.error("Error adding task:", error);
+      }
+    }
+  };
+
+  const handleEditTask = (task) => {
+    setEditingTask(task);
+    setEditingTitle(task.title);
+  };
+
+  const handleUpdateTask = async () => {
+    if (editingTitle.trim()) {
+      try {
+        const response = await updateTask(editingTask.id, {
+          title: editingTitle,
+        });
+        setTasks(
+          tasks.map((task) =>
+            task.id === editingTask.id ? response.data : task
+          )
+        );
+        setEditingTask(null);
+        setEditingTitle("");
+      } catch (error) {
+        console.error("Error updating task:", error);
+      }
     }
   };
 
@@ -68,14 +98,32 @@ const TasksPage = () => {
               key={task.id}
               className="flex justify-between items-center p-2 border-b border-purple-200"
             >
-              <span className="text-lg">{task.title}</span>
+              {editingTask && editingTask.id === task.id ? (
+                <input
+                  type="text"
+                  className="w-full p-2 border border-purple-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  value={editingTitle}
+                  onChange={(e) => setEditingTitle(e.target.value)}
+                />
+              ) : (
+                <span className="text-lg">{task.title}</span>
+              )}
               <div>
-                <button
-                  className="text-purple-600 hover:text-purple-800 mr-2"
-                  onClick={() => alert(`Edit task ${task.id}`)} // Implement the edit functionality
-                >
-                  <FaEdit />
-                </button>
+                {editingTask && editingTask.id === task.id ? (
+                  <button
+                    className="text-green-600 hover:text-green-800 mr-2"
+                    onClick={handleUpdateTask}
+                  >
+                    Save
+                  </button>
+                ) : (
+                  <button
+                    className="text-purple-600 hover:text-purple-800 mr-2"
+                    onClick={() => handleEditTask(task)}
+                  >
+                    <FaEdit />
+                  </button>
+                )}
                 <button
                   className="text-red-600 hover:text-red-800"
                   onClick={() => handleDelete(task.id)}
