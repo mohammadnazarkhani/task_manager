@@ -6,20 +6,21 @@ const API = axios.create({
 });
 
 // API methods
-export const fetchTasks = () => API.get("/tasks");
-export const fetchTaskById = (id) => API.get(`/tasks/${id}`);
-export const createTask = (task) => API.post("/tasks", task);
+export const fetchTasks = () => API.get("/tasks"); // Fetch all tasks
+export const fetchTaskById = (id) => API.get(`/tasks/${id}`); // Fetch a task by ID
+export const createTask = (task) => API.post("/tasks", task); // Create a new task
 export const updateTask = (id, updatedTask) =>
-  API.put(`/tasks/${id}`, updatedTask);
-export const deleteTask = (id) => API.delete(`/tasks/${id}`);
+  API.put(`/tasks/${id}`, updatedTask); // Update an existing task
+export const deleteTask = (id) => API.delete(`/tasks/${id}`); // Delete a task
 
+// Interceptor to handle API response errors
 API.interceptors.response.use(
-  (response) => response,
+  (response) => response, // Return response if successful
   (error) => {
     console.error(
       "API Error:",
       error.response ? error.response.data : error.message
-    );
-    return Promise.reject(error);
+    ); // Log error message
+    return Promise.reject(error); // Reject promise with error
   }
 );

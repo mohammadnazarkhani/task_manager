@@ -3,6 +3,7 @@ using TaskManager.Entities;
 using TaskManager.Mapping;
 using TaskManager.Dtos;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Cors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,16 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ApplicationContextDb>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Add CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigins",
+        builder => builder.WithOrigins("http://localhost:3000")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials());
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -23,6 +34,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Use CORS policy
+app.UseCors("AllowSpecificOrigins");
+
+app.UseHttpsRedirection();
 
 // CRUD Endpoints
 app.MapPost("/tasks", async (CreateTaskItemDto dto, ApplicationContextDb dbContext) =>
@@ -67,7 +83,5 @@ app.MapGet("/tasks", async (ApplicationContextDb dbContext) =>
                                    .ToListAsync();
     return Results.Ok(taskItems);
 });
-
-app.UseHttpsRedirection();
 
 app.Run();
