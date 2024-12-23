@@ -27,6 +27,7 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+await app.MigrateDbAsync();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
